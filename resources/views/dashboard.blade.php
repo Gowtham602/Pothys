@@ -1,7 +1,7 @@
-<x-app-layout>
-<div class="container mt-4">
+<x-app-layout >
+<div class="container py-4">
 
-    {{-- SweetAlert Success --}}
+    {{-- SweetAlert --}}
     @if(session('success'))
     <script>
         Swal.fire({
@@ -14,35 +14,36 @@
     </script>
     @endif
 
-    {{-- SweetAlert Errors --}}
-    @if ($errors->any())
-    <script>
-        Swal.fire({
-            icon: 'error',
-            title: 'Validation Error',
-            html: `{!! implode('<br>', $errors->all()) !!}`
-        });
-    </script>
-    @endif
-
     {{-- Upload Card --}}
-    <div class="card shadow-lg border-0 mb-4">
-        <div class="card-header bg-gradient bg-primary text-white fw-bold">
-            Upload Image
-        </div>
-        <div class="card-body">
+    <div class="card border-0 shadow-sm mb-5 rounded-4">
+        <div class="card-body p-4">
+            <h4 class="fw-bold mb-4 text-dark">
+                <i class="bi bi-cloud-upload me-2"></i> Upload Image
+            </h4>
+
             <form method="POST" action="{{ route('image.upload') }}" enctype="multipart/form-data">
                 @csrf
-                <div class="row g-3 align-items-center">
+                <div class="row g-4">
                     <div class="col-md-5">
-                        <input type="text" name="image_name" class="form-control form-control-lg"
-                            placeholder="Enter Image Name" required>
+                        <label class="form-label fw-semibold">Image Name</label>
+                        <input type="text"
+                               name="image_name"
+                               class="form-control form-control-lg rounded-3"
+                               placeholder="Enter Image Name"
+                               required>
                     </div>
+
                     <div class="col-md-5">
-                        <input type="file" name="image" class="form-control form-control-lg" required>
+                        <label class="form-label fw-semibold">Select File</label>
+                        <input type="file"
+                               name="image"
+                               class="form-control form-control-lg rounded-3"
+                               required>
                     </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-success btn-lg w-100">
+
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit"
+                                class="btn btn-dark btn-lg w-100 rounded-3">
                             Upload
                         </button>
                     </div>
@@ -51,44 +52,80 @@
         </div>
     </div>
 
-    {{-- Image Table --}}
-    <div class="card shadow-lg border-0">
-        <div class="card-header bg-dark text-white fw-bold">
-            Your Uploaded Images
-        </div>
-        <div class="card-body">
+    {{-- Table Card --}}
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+
+            <h4 class="fw-bold mb-4 text-dark">
+                <i class="bi bi-images me-2"></i> Uploaded Images
+            </h4>
 
             <div class="table-responsive">
-                <table id="imageTable" class="table table-hover table-bordered align-middle">
-                    <thead class="table-dark text-center">
-                        <tr>
+                <table id="imageTable"
+                       class="table align-middle table-hover">
+                    <thead class="border-bottom">
+                        <tr class="text-muted">
                             <th>#</th>
-                            <th>Name</th>
+                            <th>Image</th>
                             <th>Short URL</th>
-                            <th>Action</th>
+                            <th>Date</th>
+                            <th class="text-center">Action</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         @foreach($images as $key => $image)
                         <tr>
-                            <td class="text-center">{{ $key + 1 }}</td>
-                            <td>{{ $image->image_name }}</td>
+
+                            <td class="fw-semibold">
+                                {{ $loop->iteration }}
+                            </td>
+
+                            {{-- Image Name --}}
                             <td>
-                                <a href="{{ url('/s/'.$image->short_code) }}" target="_blank" class="text-decoration-none">
-                                    {{ url('/s/'.$image->short_code) }}
+                                <a href="{{ asset('storage/'.$image->file_path) }}"
+                                   target="_blank"
+                                   class="text-dark text-decoration-none fw-semibold">
+                                    {{ $image->image_name }}.jpeg
                                 </a>
                             </td>
+
+                            {{-- Short URL --}}
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+
+                                    <a href="{{ url('/s/'.$image->short_code) }}"
+                                       target="_blank"
+                                       class="text-primary small text-truncate"
+                                       style="max-width:220px;">
+                                        {{ url('/s/'.$image->short_code) }}
+                                    </a>
+
+                                    <button type="button"
+                                            class="btn btn-sm btn-light border rounded-3"
+                                            onclick="copyLink('{{ url('/s/'.$image->short_code) }}')">
+                                        <i class="bi bi-clipboard"></i>
+                                    </button>
+
+                                </div>
+                            </td>
+
+                            {{-- Date --}}
+                            <td class="text-muted small">
+                                {{ $image->created_at->format('d M Y') }}
+                                <br>
+                                {{ $image->created_at->format('h:i A') }}
+                            </td>
+
+                            {{-- Action --}}
                             <td class="text-center">
                                 <a href="{{ url('/s/'.$image->short_code) }}"
                                    target="_blank"
-                                   class="btn btn-sm btn-primary">
-                                   Open
+                                   class="btn btn-sm btn-dark rounded-3">
+                                    <i class="bi bi-box-arrow-up-right"></i>
                                 </a>
-                                <button class="btn btn-sm btn-secondary"
-                                    onclick="copyLink('{{ url('/s/'.$image->short_code) }}')">
-                                    Copy
-                                </button>
                             </td>
+
                         </tr>
                         @endforeach
                     </tbody>
@@ -102,21 +139,19 @@
 
 <script>
 window.addEventListener('load', function() {
-    if (typeof $ !== 'undefined') {
-        $('#imageTable').DataTable({
-            pageLength: 10
-        });
-    } else {
-        console.error('jQuery not loaded');
-    }
+    $('#imageTable').DataTable({
+        pageLength: 10,
+        lengthMenu: [5,10,25,50],
+        ordering: true
+    });
 });
 
 function copyLink(link) {
     navigator.clipboard.writeText(link);
     Swal.fire({
         icon: 'success',
-        title: 'Copied!',
-        text: 'Short URL copied to clipboard.',
+        title: 'Copied',
+        text: 'Short URL copied to clipboard',
         timer: 1500,
         showConfirmButton: false
     });
