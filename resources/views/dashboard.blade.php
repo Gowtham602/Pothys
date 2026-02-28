@@ -1,18 +1,13 @@
 <x-app-layout >
 <div class="container py-4">
 
-    {{-- SweetAlert --}}
-    @if(session('success'))
-    <script>
-        Swal.fire({
-            icon: 'success',
-            title: 'Success',
-            text: '{{ session('success') }}',
-            timer: 2000,
-            showConfirmButton: false
-        });
-    </script>
-    @endif
+<script>
+    window.flashMessages = {
+        success: @json(session('success')),
+        error: @json(session('error')),
+        validationErrors: @json($errors->all())
+    };
+</script>
 
     {{-- Upload Card --}}
     <div class="card border-0 shadow-sm mb-5 rounded-4">
@@ -21,7 +16,7 @@
                 <i class="bi bi-cloud-upload me-2"></i> Upload Image
             </h4>
 
-            <form method="POST" action="{{ route('image.upload') }}" enctype="multipart/form-data">
+            <form id="uploadForm" method="POST" action="{{ route('image.upload') }}" enctype="multipart/form-data">
                 @csrf
                 <div class="row g-4">
                     <div class="col-md-5">
@@ -137,25 +132,6 @@
 
 </div>
 
-<script>
-window.addEventListener('load', function() {
-    $('#imageTable').DataTable({
-        pageLength: 10,
-        lengthMenu: [5,10,25,50],
-        ordering: true
-    });
-});
 
-function copyLink(link) {
-    navigator.clipboard.writeText(link);
-    Swal.fire({
-        icon: 'success',
-        title: 'Copied',
-        text: 'Short URL copied to clipboard',
-        timer: 1500,
-        showConfirmButton: false
-    });
-}
-</script>
 
 </x-app-layout>
