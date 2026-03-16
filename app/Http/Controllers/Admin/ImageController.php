@@ -8,6 +8,8 @@ use App\Models\Image;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use Jenssegers\Agent\Agent;
+use Illuminate\Support\Facades\Log;
 
 class ImageController extends Controller
 {
@@ -51,10 +53,41 @@ class ImageController extends Controller
         return back()->with('success', 'Image uploaded successfully!');
     }
 
-    public function redirect($code)
-    {
-        // dd($code);
-        $image = Image::where('short_code', $code)->firstOrFail();
-        return redirect(asset('storage/'.$image->file_path));
+    // public function redirect($code)
+    // {
+    //     // dd($code);
+    //     $image = Image::where('short_code', $code)->firstOrFail();
+    //     return redirect(asset('storage/'.$image->file_path));
+    // }
+
+    // use Jenssegers\Agent\Agent;
+
+public function redirect($code)
+{
+    // dd($code);
+    $image = Image::where('short_code', $code)->firstOrFail();
+    // Increase click count
+    $image->increment('click_count');
+    // dd($image);
+
+    // Detect device
+    $agent = new Agent();
+
+    if ($agent->isMobile()) {
+        $device = 'Mobile';
+    } elseif ($agent->isTablet()) {
+        $device = 'Tablet';
+    } else {
+        $device = 'Desktop';
     }
+
+    // Optional log
+    Log::info('Image clicked', [
+        'short_code' => $code,
+        'device' => $device,
+        'ip' => request()->ip()
+    ]);
+
+    return redirect(asset('storage/'.$image->file_path));
+}
 }

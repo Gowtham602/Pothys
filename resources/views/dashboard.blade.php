@@ -63,6 +63,7 @@
                             <th>#</th>
                             <th>Image</th>
                             <th>Short URL</th>
+                            <th>Count</th>
                             <th>Date</th>
                             <th class="text-center">Action</th>
                         </tr>
@@ -104,6 +105,8 @@
 
                                 </div>
                             </td>
+
+                            <td>{{ $image->click_count }}</td>
 
                             {{-- Date --}}
                             <td class="text-muted small">
