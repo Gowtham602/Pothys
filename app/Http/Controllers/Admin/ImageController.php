@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Image;
+use App\Models\ImageClick;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Jenssegers\Agent\Agent;
 use Illuminate\Support\Facades\Log;
+use Stevebauman\Location\Facades\Location;
 
 class ImageController extends Controller
 {
@@ -62,17 +64,44 @@ class ImageController extends Controller
 
     // use Jenssegers\Agent\Agent;
 
+// public function redirect($code)
+// {
+//     // dd($code);
+//     $image = Image::where('short_code', $code)->firstOrFail();
+//     // Increase click count
+//     $image->increment('click_count');
+//     // dd($image);
+
+//     // Detect device
+//     $agent = new Agent();
+
+//     if ($agent->isMobile()) {
+//         $device = 'Mobile';
+//     } elseif ($agent->isTablet()) {
+//         $device = 'Tablet';
+//     } else {
+//         $device = 'Desktop';
+//     }
+
+//     // Optional log
+//     Log::info('Image clicked', [
+//         'short_code' => $code,
+//         'device' => $device,
+//         'ip' => request()->ip()
+//     ]);
+
+//     return redirect(asset('storage/'.$image->file_path));
+// }
 public function redirect($code)
 {
-    // dd($code);
     $image = Image::where('short_code', $code)->firstOrFail();
-    // Increase click count
-    $image->increment('click_count');
-    // dd($image);
 
-    // Detect device
+    // increase total clicks
+    $image->increment('click_count');
+
     $agent = new Agent();
 
+    // detect device
     if ($agent->isMobile()) {
         $device = 'Mobile';
     } elseif ($agent->isTablet()) {
@@ -81,11 +110,23 @@ public function redirect($code)
         $device = 'Desktop';
     }
 
-    // Optional log
-    Log::info('Image clicked', [
-        'short_code' => $code,
-        'device' => $device,
-        'ip' => request()->ip()
+    // browser
+    $browser = $agent->browser();
+
+    // IP
+    $ip = request()->ip();
+
+    // country
+    $location = Location::get($ip);
+    $country = $location ? $location->countryName : 'Unknown';
+
+    // save analytics
+    ImageClick::create([
+        'image_id' => $image->id,
+        'ip_address' => $ip,
+        'browser' => $browser,
+        'device_type' => $device,
+        'country' => $country
     ]);
 
     return redirect(asset('storage/'.$image->file_path));
