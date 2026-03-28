@@ -13,8 +13,6 @@ use Illuminate\Support\Facades\Auth;
 use Jenssegers\Agent\Agent;
 use Illuminate\Support\Facades\Log;
 use Stevebauman\Location\Facades\Location;
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver;
 
 class ImageController extends Controller
 {
@@ -72,8 +70,6 @@ class ImageController extends Controller
 
         return back()->with('success', 'Image uploaded successfully!');
     }
-        // merge and create short url
-
 
     // public function redirect($code)
     // {
@@ -156,10 +152,12 @@ public function process(Request $request)
     $request->validate([
         'images.*' => 'required|image',
         'mode' => 'required|in:vertical,horizontal',
-    
+        'image_name' => 'required'
     ]);
 
-    // $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
+    $spacing = intval($request->input('spacing', 0));
+    $bgcolor = $request->input('bgcolor', '#ffffff');
+
     $manager = new ImageManager(new Driver());
 
     $images = [];
@@ -168,123 +166,95 @@ public function process(Request $request)
         $images[] = $manager->read($file)->orient();
     }
 
-    // simple vertical merge (for now)
-    $width = 1080;
-
-    foreach ($images as $img) {
-        $img->scale(width: $width);
+    if (empty($images)) {
+        return response()->json(['error' => 'No images'], 400);
     }
 
-    $totalHeight = array_sum(array_map(fn($img) => $img->height(), $images));
+    // =========================
+    // VERTICAL
+    // =========================
+    if ($request->mode === 'vertical') {
 
-    $canvas = $manager->create($width, $totalHeight);
+        $targetWidth = $request->filled('width') ? intval($request->width) : 1080;
 
-    $y = 0;
-    foreach ($images as $img) {
-        $canvas->place($img, 'top-left', 0, $y);
-        $y += $img->height();
+        foreach ($images as $img) {
+            $img->scale(width: $targetWidth);
+            $img->sharpen(5);
+        }
+
+        $totalHeight = array_sum(array_map(fn($img) => $img->height(), $images))
+            + ($spacing * (count($images) - 1));
+
+        $canvas = $manager->create($targetWidth, $totalHeight)->fill($bgcolor);
+
+        $y = 0;
+        foreach ($images as $img) {
+            $canvas->place($img, 'top-left', 0, $y);
+            $y += $img->height() + $spacing;
+        }
     }
 
-    // SAVE
-    $path = public_path('storage/images');
+    // =========================
+    // HORIZONTAL
+    // =========================
+    else {
 
-    if (!file_exists($path)) {
-        mkdir($path, 0777, true);
+        $targetHeight = $request->filled('height') ? intval($request->height) : 1080;
+
+        foreach ($images as $img) {
+            $img->scale(height: $targetHeight);
+            $img->sharpen(5);
+        }
+
+        $totalWidth = array_sum(array_map(fn($img) => $img->width(), $images))
+            + ($spacing * (count($images) - 1));
+
+        $canvas = $manager->create($totalWidth, $targetHeight)->fill($bgcolor);
+
+        $x = 0;
+        foreach ($images as $img) {
+            $canvas->place($img, 'top-left', $x, 0);
+            $x += $img->width() + $spacing;
+        }
     }
 
+    // =========================
+    // SAVE + SHORT URL (🔥 FIX)
+    // =========================
+
+    $outputPath = public_path('storage/images');
+
+    if (!file_exists($outputPath)) {
+        mkdir($outputPath, 0777, true);
+    }
+
+    // clean name
     $cleanName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $request->image_name);
 
     $fileName = $cleanName . '_' . time() . '.jpg';
 
-    $canvas->toJpeg(95)->save($path . '/' . $fileName);
+    $path = $outputPath . '/' . $fileName;
 
-    // SHORT CODE
+    // save image
+    $canvas->toJpeg(95)->save($path);
+
+    // generate short code
     do {
         $shortCode = Str::random(6);
     } while (Image::where('short_code', $shortCode)->exists());
 
-    // SAVE DB
-    // Image::create([
-    //     'user_id' => Auth::id(),
-    //     'image_name' => $cleanName,
-    //     'file_path' => 'images/' . $fileName,
-    //     'short_code' => $shortCode
-    // ]);
-
-    // return response()->json([
-    //     'image' => asset('storage/images/' . $fileName),
-    //     'short_url' => url('/s/' . $shortCode)
-    // ]);
-    return response()->json([
-    'image' => asset('storage/images/' . $fileName),
-    'file_path' => 'images/' . $fileName
-]);
-}
-
-        //merge and shorl url create and save to db 
-
-// public function saveImage(Request $request)
-// {
-//     $request->validate([
-//         'image_name' => 'required',
-//         'file_path' => 'required'
-//     ]);
-
-//     $cleanName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $request->image_name);
-
-//     do {
-//         $shortCode = Str::random(6);
-//     } while (Image::where('short_code', $shortCode)->exists());
-
-//     Image::create([
-//         'user_id' => Auth::id(),
-//         'image_name' => $cleanName,
-//         'file_path' => $request->file_path,
-//         'short_code' => $shortCode
-//     ]);
-
-//     return response()->json([
-//         'short_url' => url('/s/' . $shortCode)
-//     ]);
-// }
-
-public function saveImage(Request $request)
-{
-    $request->validate([
-        'image_name' => 'required',
-        'file_path' => 'required'
-    ]);
-
-    $cleanName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $request->image_name);
-
-    //  CHECK DUPLICATE NAME
-    $exists = Image::where('user_id', Auth::id())
-        ->where('image_name', $cleanName)
-        ->exists();
-
-    if ($exists) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Image name already exists!'
-        ], 422);
-    }
-
-    // generate shortcode
-    do {
-        $shortCode = Str::random(6);
-    } while (Image::where('short_code', $shortCode)->exists());
-
+    // save in DB
     Image::create([
         'user_id' => Auth::id(),
         'image_name' => $cleanName,
-        'file_path' => $request->file_path,
+        'file_path' => 'images/' . $fileName,
         'short_code' => $shortCode
     ]);
 
     return response()->json([
-        'status' => 'success',
-        'message' => 'Image saved successfully!',
+        'image' => asset('storage/images/' . $fileName),
         'short_url' => url('/s/' . $shortCode)
     ]);
 }
+
 }

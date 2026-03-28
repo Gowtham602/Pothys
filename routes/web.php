@@ -1,5 +1,4 @@
 <?php
-
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\ImageController;
@@ -8,35 +7,46 @@ use App\Http\Controllers\Admin\ImageController;
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
 */
 
+//  HOME → MERGE PAGE
 Route::get('/', function () {
-    return redirect()->route('login');
+    // return view('imageupload'); // merge UI
+       return redirect()->route('login');
 });
 
+//  MERGE PROCESS
+Route::post('/process-images', [ImageController::class, 'process'])
+    ->name('image.process');
 
-
-
-
-
-Route::middleware(['auth'])->group(function () {
-
-    Route::get('/dashboard', [ImageController::class, 'index'])
-        ->name('dashboard');
-
-    Route::post('/upload', [ImageController::class, 'store'])
-        ->name('image.upload');
-});
-
+//  SHORT URL (PUBLIC)
 Route::get('/s/{code}', [ImageController::class, 'redirect'])
     ->name('short.url');
 
 
+// merge and short url for 
+Route::post('/save-image', [ImageController::class, 'saveImage']);
+
+// =========================
+// AUTH REQUIRED
+// =========================
+Route::middleware(['auth'])->group(function () {
+
+    // DASHBOARD
+    Route::get('/dashboard', [ImageController::class, 'index'])
+        ->name('dashboard');
+
+    // MOBILE ANALYTICS
+    Route::get('/next', [ImageController::class, 'mobile'])
+        ->name('next');
+
+    // UPLOAD (OLD FEATURE)
+    Route::post('/upload', [ImageController::class, 'store'])
+        ->name('image.upload');
+});
+
+
+// PROFILE
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

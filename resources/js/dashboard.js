@@ -75,6 +75,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
             let name = document.querySelector('input[name="image_name"]').value.trim();
             let file = document.querySelector('input[name="image"]').files[0];
+            let files = document.querySelectorAll('input[name="images[]"]');
+
+if (files.length === 0 || !files[0].files.length) {
+    e.preventDefault();
+    Swal.fire({
+        icon: 'error',
+        title: 'Please select at least one image'
+    });
+    return;
+}
 
             if (name === '') {
                 e.preventDefault();
