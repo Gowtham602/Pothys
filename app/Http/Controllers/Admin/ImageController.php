@@ -75,51 +75,14 @@ class ImageController extends Controller
         // merge and create short url
 
 
-    // public function redirect($code)
-    // {
-    //     // dd($code);
-    //     $image = Image::where('short_code', $code)->firstOrFail();
-    //     return redirect(asset('storage/'.$image->file_path));
-    // }
-
-    // use Jenssegers\Agent\Agent;
-
-// public function redirect($code)
-// {
-//     // dd($code);
-//     $image = Image::where('short_code', $code)->firstOrFail();
-//     // Increase click count
-//     $image->increment('click_count');
-//     // dd($image);
-
-//     // Detect device
-//     $agent = new Agent();
-
-//     if ($agent->isMobile()) {
-//         $device = 'Mobile';
-//     } elseif ($agent->isTablet()) {
-//         $device = 'Tablet';
-//     } else {
-//         $device = 'Desktop';
-//     }
-
-//     // Optional log
-//     Log::info('Image clicked', [
-//         'short_code' => $code,
-//         'device' => $device,
-//         'ip' => request()->ip()
-//     ]);
-
-//     return redirect(asset('storage/'.$image->file_path));
-// }
 public function redirect($code)
 {
     $image = Image::where('short_code', $code)->firstOrFail();
 
     // increase total clicks
-    $image->increment('click_count');
+    $image->increment('click_count'); 
 
-    $agent = new Agent();
+    $agent = new Agent();   
 
     // detect device
     if ($agent->isMobile()) {
@@ -131,10 +94,10 @@ public function redirect($code)
     }
 
     // browser
-    $browser = $agent->browser();
+    $browser = $agent->browser();          
 
     // IP
-    $ip = request()->ip();
+    $ip = request()->ip();            
 
     // country
     $location = Location::get($ip);
@@ -142,24 +105,23 @@ public function redirect($code)
 
     // save analytics
     ImageClick::create([
-        'image_id' => $image->id,
-        'ip_address' => $ip,
-        'browser' => $browser,
+        'image_id' => $image->id,   
+        'ip_address' => $ip,                  
+        'browser' => $browser,   
         'device_type' => $device,
         'country' => $country
-    ]);
+    ]); 
 
     return redirect(asset('storage/'.$image->file_path));
 }
+
 public function process(Request $request)
 {
     $request->validate([
         'images.*' => 'required|image',
         'mode' => 'required|in:vertical,horizontal',
-    
     ]);
 
-    // $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
     $manager = new ImageManager(new Driver());
 
     $images = [];
@@ -168,7 +130,6 @@ public function process(Request $request)
         $images[] = $manager->read($file)->orient();
     }
 
-    // simple vertical merge (for now)
     $width = 1080;
 
     foreach ($images as $img) {
@@ -185,69 +146,24 @@ public function process(Request $request)
         $y += $img->height();
     }
 
-    // SAVE
+    // SAVE PATH
     $path = public_path('storage/images');
 
     if (!file_exists($path)) {
         mkdir($path, 0777, true);
     }
 
-    $cleanName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $request->image_name);
-
-    $fileName = $cleanName . '_' . time() . '.jpg';
+    // TEMP NAME (ONLY TEMP, NOT FINAL NAME)
+    $fileName = 'temp_' . time() . '.jpg';
 
     $canvas->toJpeg(95)->save($path . '/' . $fileName);
 
-    // SHORT CODE
-    do {
-        $shortCode = Str::random(6);
-    } while (Image::where('short_code', $shortCode)->exists());
-
-    // SAVE DB
-    // Image::create([
-    //     'user_id' => Auth::id(),
-    //     'image_name' => $cleanName,
-    //     'file_path' => 'images/' . $fileName,
-    //     'short_code' => $shortCode
-    // ]);
-
-    // return response()->json([
-    //     'image' => asset('storage/images/' . $fileName),
-    //     'short_url' => url('/s/' . $shortCode)
-    // ]);
     return response()->json([
-    'image' => asset('storage/images/' . $fileName),
-    'file_path' => 'images/' . $fileName
-]);
+        'image' => asset('storage/images/' . $fileName),
+        'file_path' => 'images/' . $fileName
+    ]);
 }
-
         //merge and shorl url create and save to db 
-
-// public function saveImage(Request $request)
-// {
-//     $request->validate([
-//         'image_name' => 'required',
-//         'file_path' => 'required'
-//     ]);
-
-//     $cleanName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $request->image_name);
-
-//     do {
-//         $shortCode = Str::random(6);
-//     } while (Image::where('short_code', $shortCode)->exists());
-
-//     Image::create([
-//         'user_id' => Auth::id(),
-//         'image_name' => $cleanName,
-//         'file_path' => $request->file_path,
-//         'short_code' => $shortCode
-//     ]);
-
-//     return response()->json([
-//         'short_url' => url('/s/' . $shortCode)
-//     ]);
-// }
-
 public function saveImage(Request $request)
 {
     $request->validate([
@@ -257,27 +173,33 @@ public function saveImage(Request $request)
 
     $cleanName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $request->image_name);
 
-    //  CHECK DUPLICATE NAME
-    $exists = Image::where('user_id', Auth::id())
-        ->where('image_name', $cleanName)
-        ->exists();
+    $path = public_path('storage/');
 
-    if ($exists) {
+    $oldPath = $path . $request->file_path;
+    $newFileName = $cleanName . '.jpg';
+    $newPath = $path . 'images/' . $newFileName;
+
+    //  duplicate check
+    if (file_exists($newPath)) {
         return response()->json([
             'status' => 'error',
             'message' => 'Image name already exists!'
         ], 422);
     }
 
+    //  rename file
+    rename($oldPath, $newPath);
+
     // generate shortcode
     do {
         $shortCode = Str::random(6);
     } while (Image::where('short_code', $shortCode)->exists());
 
+    // save DB
     Image::create([
         'user_id' => Auth::id(),
         'image_name' => $cleanName,
-        'file_path' => $request->file_path,
+        'file_path' => 'images/' . $newFileName,
         'short_code' => $shortCode
     ]);
 

@@ -1,6 +1,6 @@
 // import './bootstrap';
 console.log("1233");
-
+let filePath = '';
 $(document).ready(function () {
 console.log("hhhhhhhhhhhhhhh231");
 
@@ -147,7 +147,7 @@ success: function(res) {
 $('#saveBtn').off('click').on('click', function () {
 
     let imageName = $('#renameInput').val();
-
+        console.log(imageName,"___name");
     if (!imageName) {
         Swal.fire({
             icon: 'error',
