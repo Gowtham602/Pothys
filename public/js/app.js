@@ -173,21 +173,46 @@ $('#saveBtn').off('click').on('click', function () {
             _token: $('meta[name="csrf-token"]').attr('content')
         },
 
-        success: function(res) {
+        // success: function(res) {
 
-            //  SUCCESS ALERT
-            Swal.fire({
-                icon: 'success',
-                title: 'Success',
-                text: res.message
-            });
+        //     //  SUCCESS ALERT
+        //     Swal.fire({
+        //         icon: 'success',
+        //         title: 'Success',
+        //         text: res.message
+        //     });
 
-            //  SHOW SHORT URL
-            $('#').html(
-                'Short URL: <a href="' + res.short_url + '" target="_blank">' + res.short_url + '</a>'
-            );
-        },
+        //     //  SHOW SHORT URL
+        //     $('#').html(
+        //         'Short URL: <a href="' + res.short_url + '" target="_blank">' + res.short_url + '</a>'
+        //     );
+        // },
+  success: function(res) {
 
+    Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: res.message,
+        timer: 1500,
+        showConfirmButton: false
+    }).then(() => {
+
+        //  CLOSE MODAL AFTER ALERT
+        let modalEl = document.getElementById('resultModal');
+        let modal = bootstrap.Modal.getInstance(modalEl);
+
+        if (modal) {
+            modal.hide();
+        }
+
+        //  CLEAR INPUT
+        $('#renameInput').val('');
+
+        //  REFRESH TABLE
+        loadImages();
+    });
+
+},
         error: function(xhr) {
 
             let msg = 'Something went wrong';
@@ -206,32 +231,74 @@ $('#saveBtn').off('click').on('click', function () {
     });
 });
 
-// $('#saveBtn').off('click').on('click', function () {
 
-//     let imageName = $('#renameInput').val();
+function loadImages() {
 
-//     if (!imageName) {
-//         alert("Enter image name");
-//         return;
-//     }
+    let table = $('#imageTable').DataTable();
 
-//     $.ajax({
-//         url: "/save-image",
-//         type: "POST",
-//         data: {
-//             image_name: imageName,
-//             file_path: filePath,
-//             _token: $('meta[name="csrf-token"]').attr('content')
-//         },
-//         success: function(res) {
-//             $('#shortUrl').html(
-//                     'Short URL: <a href="' + res.short_url + '" target="_blank">' + res.short_url + '</a>'
-//                 );
-//         },
-//         error: function(err) {
-//             console.log(err.responseText);
-//         }
-//     });
-// });
+    $.ajax({
+        url: "/get-images",
+        type: "GET",
+        success: function(res) {
 
+            table.clear();
 
+            res.images.forEach((img, index) => {
+
+                let fullUrl = `${window.location.origin}/s/${img.short_code}`;
+
+                // 🔥 FIX FILE PATH HERE
+                let filePath = img.file_path;
+
+                if (!filePath.startsWith('images/')) {
+                    filePath = 'images/' + filePath;
+                }
+
+                // add extension if missing
+                if (!filePath.endsWith('.jpg') && !filePath.endsWith('.jpeg')) {
+                    filePath = filePath + '.jpg';
+                }
+
+                let imageUrl = `${window.location.origin}/storage/${filePath}`;
+
+                table.row.add([
+                    index + 1,
+
+                    // IMAGE LINK  FIXED
+                    `<a href="${imageUrl}" target="_blank">
+                        ${img.image_name}.jpeg
+                    </a>`,
+
+                    // SHORT URL + COPY
+                    `<div class="d-flex align-items-center gap-2">
+                        <a href="${fullUrl}" target="_blank">
+                            ${fullUrl}
+                        </a>
+                        <button class="btn btn-sm btn-light border rounded-3"
+                            onclick="copyLink('${fullUrl}')">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>`,
+
+                    img.click_count,
+
+                    new Date(img.created_at).toLocaleString()
+                ]);
+
+            });
+
+            table.draw();
+        }
+    });
+}
+window.copyLink = function (link) {
+    navigator.clipboard.writeText(link).then(() => {
+        Swal.fire({
+            icon: 'success',
+            title: 'Copied',
+            text: 'Short URL copied',
+            timer: 1200,
+            showConfirmButton: false
+        });
+    });
+};

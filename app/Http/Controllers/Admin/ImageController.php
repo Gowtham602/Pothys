@@ -27,6 +27,17 @@ class ImageController extends Controller
         return view('dashboard', compact('images'));
     }
 
+    public function getImages()
+    {
+        $images = Image::where('user_id', Auth::id())
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'images' => $images
+        ]);
+    }
+
         public function mobile()
         {
             $imageClicks = ImageClick::join('images', 'image_clicks.image_id', '=', 'images.id')

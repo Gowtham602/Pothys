@@ -40,6 +40,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/next', [ImageController::class, 'mobile'])
         ->name('next');
 
+    Route::get('/get-images', [ImageController::class, 'getImages']);
+
     // UPLOAD (OLD FEATURE)
     Route::post('/upload', [ImageController::class, 'store'])
         ->name('image.upload');

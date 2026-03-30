@@ -173,7 +173,7 @@
                                 <th>Short URL</th>
                                 <th>Count</th>
                                 <th>Date</th>
-                                <th class="text-center">Action</th>
+                                <!-- <th class="text-center">Action</th> -->
                             </tr>
                         </thead>
 
@@ -224,13 +224,13 @@
                                 </td>
 
                                 {{-- Action --}}
-                                <td class="text-center">
+                                <!-- <td class="text-center">
                                     <a href="{{ url('/s/'.$image->short_code) }}"
                                         target="_blank"
                                         class="btn btn-sm btn-dark rounded-3">
                                         <i class="bi bi-box-arrow-up-right"></i>
                                     </a>
-                                </td>
+                                </td> -->
 
                             </tr>
                             @endforeach
