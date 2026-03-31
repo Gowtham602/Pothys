@@ -111,11 +111,9 @@
             </div>
         </div>
 
-        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
         <!-- YOUR JS -->
-        <script src="{{ asset('js/app.js') }}"></script>
+        <!-- <script src="{{ asset('js/app.js') }}"></script> -->
 
         {{-- Upload Card --}}
         <!-- <div class="card border-0 shadow-sm mb-5 rounded-4">
@@ -177,7 +175,7 @@
                             </tr>
                         </thead>
 
-                        <tbody>
+                        <!-- <tbody>
                             @foreach($images as $key => $image)
                             <tr>
 
@@ -221,7 +219,7 @@
                                     {{ $image->created_at->format('d M Y') }}
                                     <br>
                                     {{ $image->created_at->format('h:i A') }}
-                                </td>
+                                </td> -->
 
                                 {{-- Action --}}
                                 <!-- <td class="text-center">
@@ -232,9 +230,9 @@
                                     </a>
                                 </td> -->
 
-                            </tr>
+                            <!-- </tr>
                             @endforeach
-                        </tbody>
+                        </tbody> -->
                     </table>
                 </div>
 

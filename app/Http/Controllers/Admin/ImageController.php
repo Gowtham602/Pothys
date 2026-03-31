@@ -27,17 +27,69 @@ class ImageController extends Controller
         return view('dashboard', compact('images'));
     }
 
-    public function getImages()
-    {
-        $images = Image::where('user_id', Auth::id())
-            ->latest()
-            ->get();
+    // public function getImages()
+    // {
+    //     $images = Image::where('user_id', Auth::id())
+    //         ->latest()
+    //         ->get();
 
-        return response()->json([
-            'images' => $images
-        ]);
+    //     return response()->json([
+    //         'images' => $images
+    //     ]);
+    // }
+
+    public function getImages(Request $request)
+{
+    $query = Image::where('user_id', Auth::id());
+
+    // Search
+    if ($request->search['value']) {
+        $search = $request->search['value'];
+        $query->where('image_name', 'like', "%{$search}%");
     }
 
+    $total = $query->count();
+
+    // Pagination
+    $images = $query->latest()
+        ->skip($request->start)
+        ->take($request->length)
+        ->get();
+
+    $data = [];
+
+    foreach ($images as $index => $img) {
+        $fullUrl = url('/s/' . $img->short_code);
+
+        $imageUrl = asset('storage/' . $img->file_path);
+
+        $data[] = [
+            $request->start + $index + 1,
+
+            "<a href='{$imageUrl}' target='_blank'>
+                {$img->image_name}.jpeg
+            </a>",
+
+            "<div class='d-flex gap-2'>
+                <a href='{$fullUrl}' target='_blank'>{$fullUrl}</a>
+                <button onclick=\"copyLink('{$fullUrl}')\" class='btn btn-sm btn-light'> 
+                    
+                </button>
+            </div>",
+
+            $img->click_count,
+
+            $img->created_at->format('d M Y h:i A')
+        ];
+    }
+
+    return response()->json([
+        "draw" => intval($request->draw),
+        "recordsTotal" => $total,
+        "recordsFiltered" => $total,
+        "data" => $data
+    ]);
+}
         public function mobile()
         {
             $imageClicks = ImageClick::join('images', 'image_clicks.image_id', '=', 'images.id')
