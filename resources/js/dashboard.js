@@ -157,7 +157,9 @@ $(document).ready(function () {
         $("#loader").css("display", "flex");
 
         $.ajax({
-            url: "/process-images",
+            // url: "/process-images",
+            // url: "{{ route('image.process') }}",
+            url: window.appUrl + "/process-images",
             type: "POST",
             data: formData,
             contentType: false,
@@ -278,7 +280,9 @@ $("#saveBtn")
         }
 
         $.ajax({
-            url: "/save-image",
+            // url: "/save-image",
+            // url: "{{ route('save.image') }}",
+            url: window.appUrl + "/save-image",
             type: "POST",
             data: {
                 image_name: imageName,
@@ -343,7 +347,9 @@ $(document).ready(function () {
     table = $("#imageTable").DataTable({
         processing: true,
         serverSide: true,
-        ajax: "/get-images",
+        // ajax: "/get-images",
+        // ajax: "{{ url('get-images') }}",
+        ajax: window.appUrl + "/get-images",
 
         columns: [
             { title: "#" },

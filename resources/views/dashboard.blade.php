@@ -241,6 +241,9 @@
 
     </div>
 
+<script>
+    window.appUrl = "{{ url('/') }}";
+</script>
 
 
 </x-app-layout>

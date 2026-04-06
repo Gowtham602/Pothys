@@ -25,7 +25,7 @@ Route::get('/s/{code}', [ImageController::class, 'redirect'])
 
 
 // merge and short url for 
-Route::post('/save-image', [ImageController::class, 'saveImage']);
+Route::post('/save-image', [ImageController::class, 'saveImage'])->name('save.image');
 
 // =========================
 // AUTH REQUIRED
@@ -40,7 +40,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/next', [ImageController::class, 'mobile'])
         ->name('next');
 
-    Route::get('/get-images', [ImageController::class, 'getImages']);
+    Route::get('/get-images', [ImageController::class, 'getImages'])->name('get.images');
 
     // UPLOAD (OLD FEATURE)
     Route::post('/upload', [ImageController::class, 'store'])
