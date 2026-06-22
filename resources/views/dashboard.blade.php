@@ -26,6 +26,19 @@
                         </select>
                         <div id="dynamicOptions" class="mt-3"></div>
                     </div>
+                    <div class="mb-3">
+                        <label>District</label>
+
+                        <select name="district_id" id="district_id" class="form-control" required>
+                            <option value="">Select District</option>
+
+                            @foreach($districts as $district)
+                                <option value="{{ $district->id }}">
+                                    {{ $district->district_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
                     <!-- IMAGES -->
                     <!-- <div id="imageContainer">
@@ -243,7 +256,11 @@
 
 <script>
     window.appUrl = "{{ url('/') }}";
+
+window.routes = {
+    saveImage: "{{ route('save.image') }}",
+    processImage: "{{ route('image.process') }}",
+    getImages: "{{ route('get.images') }}"
+};
 </script>
-
-
 </x-app-layout>

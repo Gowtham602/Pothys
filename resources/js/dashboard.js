@@ -122,11 +122,11 @@
 // // });
 
 // import './bootstrap';
-console.log("1233");
+
 let table;
 let filePath = "";
 $(document).ready(function () {
-    console.log("hh231");
+    console.log("working ");
 
     function addRow() {
         $("#imageContainer").append(`
@@ -153,13 +153,13 @@ $(document).ready(function () {
         e.preventDefault();
 
         let formData = new FormData(this);
-
+        let selectedDistrict = $("#district_id").val();
         $("#loader").css("display", "flex");
 
         $.ajax({
             // url: "/process-images",
             // url: "{{ route('image.process') }}",
-            url: window.appUrl + "/process-images",
+            url: window.routes.processImage,
             type: "POST",
             data: formData,
             contentType: false,
@@ -176,8 +176,10 @@ $(document).ready(function () {
                 $("#modalImage").attr("src", url);
 
                 //  CLEAR FILE INPUTS
-                $("#mergeForm")[0].reset();
-
+                // $("#mergeForm")[0].reset();
+                // Clear only image inputs
+                $('input[name="images[]"]').val('');
+                $("#district_id").val(selectedDistrict);
                 $("#modalDownload")
                     .off("click")
                     .on("click", function () {
@@ -261,8 +263,9 @@ $(document).ready(function () {
 $("#saveBtn")
     .off("click")
     .on("click", function () {
-        let imageName = $("#renameInput").val();
-        console.log(imageName, "___name");
+        let  imageName = $("#renameInput").val();
+        let districtId = $("#district_id").val();
+        console.log(districtId, "District id");
         if (!imageName) {
             Swal.fire({
                 icon: "error",
@@ -278,14 +281,22 @@ $("#saveBtn")
             });
             return;
         }
+         if (!districtId) {
+        Swal.fire({
+            icon: "error",
+            title: "Please select district"
+        });
+        return;
+    }
 
         $.ajax({
             // url: "/save-image",
             // url: "{{ route('save.image') }}",
-            url: window.appUrl + "/save-image",
+            url: window.routes.saveImage,
             type: "POST",
             data: {
                 image_name: imageName,
+                district_id: districtId,
                 file_path: filePath,
                 _token: $('meta[name="csrf-token"]').attr("content"),
             },
@@ -303,6 +314,9 @@ $("#saveBtn")
                     showConfirmButton: false,
                 }).then(() => {
                     // close modal
+                    $("#renameInput").val("");
+                $("#district_id").val(""); // default option
+                filePath = "";
                     let modalEl = document.getElementById("resultModal");
                     let modal = bootstrap.Modal.getInstance(modalEl);
                     if (modal) modal.hide();
@@ -349,8 +363,11 @@ $(document).ready(function () {
         serverSide: true,
         // ajax: "/get-images",
         // ajax: "{{ url('get-images') }}",
-        ajax: window.appUrl + "/get-images",
-
+        // ajax: window.appUrl + "/get-images",
+        ajax: {
+        url: window.routes.getImages,
+        type: "GET"
+    },
         columns: [
             { title: "#" },
             { title: "Image" },
