@@ -57,7 +57,7 @@ class ImageController extends Controller
         $data = [];
 
         foreach ($images as $index => $img) {
-            $fullUrl = url('/s/' . $img->short_code);
+            $fullUrl = url('/' . $img->short_code);
 
             $imageUrl = asset('storage/' . $img->file_path);
 
@@ -418,7 +418,7 @@ class ImageController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Image saved successfully',
-            'short_url' => url('/s/' . $shortCode)
+            'short_url' => url($shortCode)
         ]);
     }
 }

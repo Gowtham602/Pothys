@@ -13,16 +13,18 @@ use App\Http\Controllers\Admin\ImageController;
 Route::get('/', function () {
     // return view('imageupload'); // merge UI
        return redirect()->route('login');
-});
+});      
 
 //  MERGE PROCESS
 Route::post('/process-images', [ImageController::class, 'process'])
     ->name('image.process');
 
 //  SHORT URL (PUBLIC)
-Route::get('/s/{code}', [ImageController::class, 'redirect'])
+// Route::get('/s/{code}', [ImageController::class, 'redirect'])
+//     ->name('short.url');
+Route::get('/{code}', [ImageController::class, 'redirect'])
+    ->where('code', '[A-Z]{3}[0-9]{4}')
     ->name('short.url');
-
 
 // merge and short url for 
 Route::post('/save-image', [ImageController::class, 'saveImage'])->name('save.image');
@@ -46,6 +48,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/upload', [ImageController::class, 'store'])
         ->name('image.upload');
 });
+
 
 
 // PROFILE
