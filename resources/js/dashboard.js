@@ -221,8 +221,8 @@ $(document).ready(function () {
 
             if (mode === "vertical") {
                 html = `
-                <div class="row">
-                    <div class="col-md-4">
+                <div class="row hidden">
+                    <div class="col-md-4 ">
                         <label>Width (px)</label>
                         <input type="number" name="width" class="form-control">
                     </div>
@@ -238,7 +238,7 @@ $(document).ready(function () {
             `;
             } else {
                 html = `
-                <div class="row">
+                <div class="row hidden">
                     <div class="col-md-4">
                         <label>Height (px)</label>
                         <input type="number" name="height" class="form-control">
@@ -362,7 +362,7 @@ $(document).ready(function () {
         processing: true,
         serverSide: true,
         // ajax: "/get-images",
-        // ajax: "{{ url('get-images') }}",
+        // ajax: "{{ url('get-images') }}", 
         // ajax: window.appUrl + "/get-images",
         ajax: {
         url: window.routes.getImages,

@@ -8,67 +8,67 @@
                     <a href="{{ route('dashboard') }}">
                         <x-application-logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
                     </a>
-                    
+
                 </div>
 
                 <!-- Navigation Links -->
-               <div class="space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                <div class="space-x-8 sm:-my-px sm:ms-10 sm:flex">
 
-    <a href="{{ route('dashboard') }}"
-       class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600">
-        Dashboard
-    </a>
+                    <a href="{{ route('dashboard') }}"
+                        class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600">
+                        Dashboard
+                    </a>
 
-    <a href="{{ route('next') }}"
-       class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600">
-        Device Analytics
-    </a>
+                    <a href="{{ route('next') }}"
+                        class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600">
+                        Device Analytics
+                    </a>
 
-</div>
+                </div>
             </div>
 
             <!-- Settings Dropdown -->
-           <div class="hidden sm:flex sm:items-center sm:ms-6">
-    <div class="dropdown">
-        <button
-            class="btn btn-outline-primary dropdown-toggle"
-            type="button"
-            data-bs-toggle="dropdown"
-            aria-expanded="false">
+            <div class="hidden sm:flex sm:items-center sm:ms-6">
+                <div class="dropdown">
+                    <button
+                        class="btn btn-outline-primary dropdown-toggle"
+                        type="button"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false">
 
-            <i class="bi bi-person-circle me-1"></i>
-            {{ Auth::user()->name }}
+                        <i class="bi bi-person-circle me-1"></i>
+                        {{ Auth::user()->name }}
 
-        </button>
-
-        <ul class="dropdown-menu dropdown-menu-end">
-
-            <li>
-                <a class="dropdown-item"
-                   href="{{ route('profile.edit') }}">
-                    Profile
-                </a>
-            </li>
-
-            <li>
-                <hr class="dropdown-divider">
-            </li>
-
-            <li>
-                <form method="POST"
-                      action="{{ route('logout') }}">
-                    @csrf
-
-                    <button type="submit"
-                            class="dropdown-item text-danger">
-                        Logout
                     </button>
-                </form>
-            </li>
 
-        </ul>
-    </div>
-</div>
+                    <ul class="dropdown-menu dropdown-menu-end">
+
+                        <li>
+                            <a class="dropdown-item"
+                                href="{{ route('profile.edit') }}">
+                                Profile
+                            </a>
+                        </li>
+
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+
+                        <li>
+                            <form method="POST"
+                                action="{{ route('logout') }}">
+                                @csrf
+
+                                <button type="submit"
+                                    class="dropdown-item text-danger">
+                                    Logout
+                                </button>
+                            </form>
+                        </li>
+
+                    </ul>
+                </div>
+            </div>
 
             <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
@@ -107,7 +107,7 @@
                     @csrf
 
                     <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
+                        onclick="event.preventDefault();
                                         this.closest('form').submit();">
                         {{ __('Log Out') }}
                     </x-responsive-nav-link>
